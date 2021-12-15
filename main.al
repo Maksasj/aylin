@@ -1,58 +1,20 @@
-function division
-    retrieve in to in
-    retrieve buf to buf
-    retrieve out to out
-    
-
-    sum in with buf
-
-    provide in with in
-
-    add 1 to out
-    
-    provide out with out
-    set 0 to out
-    if in higher out run division
-    
-    retrieve out to out
-
-    say out
-    
-    invert in
-    
-    provide in with in
-
-    set 10 to out
-    provide out with out
-    multiplicationbyten
-    retrieve in to in
-    say in
-end
-
 function main
-    in 8
-    move in to buf
-    in 36
-
-    provide in with in
-    invert buf
-    provide buf with buf
-    set -1 to out
-    provide out with out
-
-    division
+    set 500 to global in
+    set global in to out
+    set out to global buf
+    invert global buf
+    say global buf
+    f1
 end
 
-function multiplicationbyten
-    retrieve in to in
-    retrieve out to out
-    sum in with in
-    provide in with in
-    say out
-    add -1 to out
-    provide out with out
-    in 10
-    if out higher in run multiplicationbyten
+function f1
+    set parent out to out
+    f2
+end
+
+function f2
+    wait parent out
+    say parent out
 end
 
 main
