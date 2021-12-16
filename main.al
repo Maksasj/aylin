@@ -1,20 +1,13 @@
 function main
-    set 500 to global in
-    set global in to out
-    set out to global buf
-    invert global buf
-    say global buf
-    f1
+    set 0 to in
+    loop
 end
 
-function f1
-    set parent out to out
-    f2
-end
-
-function f2
-    wait parent out
-    say parent out
+function loop
+    say parent in
+    add 1 to parent in into in
+    say in
+    loop
 end
 
 main

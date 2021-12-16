@@ -16,10 +16,11 @@ struct Function {
 
     Function(int x_point) {
         pointer = x_point;
-        int in = 0;
-        int out = 0;
-        int buf = 0;
+        in = 0;
+        buf = 0;
+        out = 0;
     }
+
     void changevarfromstr(std::vector<std::string> lines, int value) {
         
         if (lines[pointer] == "global") {
@@ -43,9 +44,8 @@ struct Function {
         pointer++;
     }
 
-    int returnint(std::vector<std::string> lines, std::vector<int> parent) {
+    int returnint(std::vector<std::string> lines, std::vector<int> parent, std::vector<Function>& Functions) {
         std::string line = lines[pointer];
-        
         if (isdigit(line[0])) {
             int val = stoi(lines[pointer]);
             pointer++;
@@ -57,6 +57,17 @@ struct Function {
                 } else if (lines[pointer] == "buf") { pointer++; return parent[1];
                 } else if (lines[pointer] == "out") { pointer++; return parent[2];  }
             } else
+            if (lines[pointer] == "func") {
+                pointer++;
+                for (auto& function : Functions) {
+                    if (lines[pointer] == function.name) {                  
+                        pointer++;
+                        if (lines[pointer] == "in") { pointer++; return function.in;
+                        } else if (lines[pointer] == "buf") { pointer++; return function.buf;
+                        } else if (lines[pointer] == "out") { pointer++; return function.out;  }
+                    }
+                }
+            } else 
             if (lines[pointer] == "global") {
                 pointer++;
                 if (lines[pointer] == "in") { pointer++; return g_in;
@@ -70,10 +81,9 @@ struct Function {
         }
     }
 
-
-    void run(std::vector<std::string> lines, std::vector<Function> Functions, std::vector<int> parent) {
+    void run(std::vector<std::string> lines, std::vector<Function>& Functions, std::vector<int> parent) {
+        
         bool end_fun_running = false;
-
         while (end_fun_running == false) {
 
             //Ends Execution function
@@ -84,19 +94,19 @@ struct Function {
             // Prints in Terminal value (in , buf or out)
             if (lines[pointer] == "say") {
                 pointer++;
-                std::cout << returnint(lines, parent) << std::endl;
+                std::cout << returnint(lines, parent, Functions) << std::endl;
             } else 
             
             // Wait some time
             if (lines[pointer] == "wait") {
                 pointer++;
-                Sleep(returnint(lines, parent));
+                Sleep(returnint(lines, parent, Functions));
             } else 
      
             //Set global (in, buf or out) value from local
             if (lines[pointer] == "provide") {
                 pointer++;
-                int x = returnint(lines, parent);   
+                int x = returnint(lines, parent, Functions);   
                 pointer++;
                 changevarfromstr(lines, x);
                 
@@ -106,7 +116,7 @@ struct Function {
             if (lines[pointer] == "retrieve") {
                 pointer++;
                 
-                int x = returnint(lines, parent);
+                int x = returnint(lines, parent, Functions);
                 pointer++;
                 changevarfromstr(lines, x);
             } else
@@ -115,17 +125,18 @@ struct Function {
             if (lines[pointer] == "if") {
                 
                 pointer++;
-                int x = returnint(lines, parent);
+                int x = returnint(lines, parent, Functions);
 
                 if (lines[pointer] == "equal") {
                     pointer++;
-                    int y = returnint(lines, parent);
+                    int y = returnint(lines, parent, Functions);
 
                     if (x == y) {
                         pointer++;
-                        for (auto function : Functions) {
+                        for (auto& function : Functions) {
                             if (lines[pointer] == function.name) {
                                 if (name == function.name) {
+                                    parent = {in , buf, out};
                                     pointer = word_n + 2;
                                 } else {
                                     std::vector<int> parent_d = {in , buf, out};
@@ -137,12 +148,13 @@ struct Function {
                     }
                 } else if (lines[pointer] == "higher") {
                     pointer++;
-                    int y = returnint(lines, parent);
+                    int y = returnint(lines, parent,Functions);
                     if (x > y) {
                         pointer++;
-                        for (auto function : Functions) {
+                        for (auto& function : Functions) {
                             if (lines[pointer] == function.name) {
                                 if (name == function.name) {
+                                    parent = {in , buf, out};
                                     pointer = word_n + 2;
                                 } else {
                                     std::vector<int> parent_d = {in , buf, out};
@@ -154,12 +166,13 @@ struct Function {
                     }
                 } else if (lines[pointer] == "lower") {
                     pointer++;
-                    int y = returnint(lines, parent);
+                    int y = returnint(lines, parent, Functions);
                     if (x < y) {
                         pointer++;
-                        for (auto function : Functions) {
+                        for (auto& function : Functions) {
                             if (lines[pointer] == function.name) {
                                 if (name == function.name) {
+                                    parent = {in , buf, out};
                                     pointer = word_n + 2;
                                 } else {
                                     std::vector<int> parent_d = {in , buf, out};
@@ -183,7 +196,7 @@ struct Function {
             //Inverts value in, buf or out
             if (lines[pointer] == "invert") {    
                 pointer++;
-                int x = returnint(lines, parent);
+                int x = returnint(lines, parent, Functions);
                 pointer++;
                 changevarfromstr(lines, -x);  
             } else 
@@ -191,7 +204,7 @@ struct Function {
             //Set value to (in, buf or out)
             if (lines[pointer] == "set") {   
                 pointer++;
-                int x = returnint(lines, parent);
+                int x = returnint(lines, parent, Functions);
                 pointer++;
                 changevarfromstr(lines, x);
             } else
@@ -199,18 +212,19 @@ struct Function {
             //Add value to (in, buf or out)
             if (lines[pointer] == "add") {        
                 pointer++;     
-                int x = returnint(lines, parent);
+                int x = returnint(lines, parent, Functions);
                 pointer++;
-                int y = returnint(lines, parent);
+                int y = returnint(lines, parent, Functions);
                 pointer++;
                 changevarfromstr(lines, (x+y));
             } else
             
             // Run Function
             {
-                for (auto function : Functions) {
+                for (auto& function : Functions) {
                     if (lines[pointer] == function.name) {
                         if (name == function.name) {
+                            parent = {in , buf, out};
                             pointer = word_n + 2;
                         } else {
                             std::vector<int> parent_d = {in , buf, out};
@@ -260,7 +274,7 @@ int main() {
                 if (lines[x] == "end") {skip_f_dec = true;}
             }
         } else {
-            for (auto function : Functions) {
+            for (auto& function : Functions) {
                 if (lines[x] == function.name) {
                     function.run(lines, Functions, {0, 0, 0});
                 }
@@ -268,6 +282,7 @@ int main() {
         }
     }
 
+    
     system("pause");
     return 0;
 }
